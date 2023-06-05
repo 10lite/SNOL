@@ -2,7 +2,7 @@
 Simple Number-Only Language: a program that implements a custom programming language. A final requirement for CMSC 124.
 
 # Cloning branch
-git clone https://github.com/10lite/Bautista_Banez_Into_Paderna_SNOL.git
+``` git clone https://github.com/10lite/Bautista_Banez_Into_Paderna_SNOL.git ```
 
 # Before making changes in personal branch
 ```
