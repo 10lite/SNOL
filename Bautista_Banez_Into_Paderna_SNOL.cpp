@@ -47,7 +47,8 @@ class Tokenizer{ //Object class to store tokenized input
 			string tokens;
 			
 			cout << "SNOL> Please enter value for [" << temp << "]: "; // storing the input value
-			cin >> tokens; 																			
+			cin >> tokens; 			
+			cout << "Input: " << tokens << endl;																
 			cin.clear();
 			// eliminates the whitespace
 			cin.ignore(numeric_limits<streamsize>::max(), '\n'); 								
@@ -55,7 +56,7 @@ class Tokenizer{ //Object class to store tokenized input
 				key[temp] = tokens; 	//checks to see if the value entered is really a number	
 			} 										 
 			else{
-				cout << "SNOL> Error! [" << temp << "] integer of float values only." << endl;
+				cout << "SNOL> Error! [" << temp << "] integer or float values only." << endl;
 			} 
 		}
 		// PRINT function
