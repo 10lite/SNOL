@@ -35,14 +35,6 @@ class Tokenizer
 	unordered_map<string, string> key; // a hash type of mapping to identify input and mapped value
 
 	public:
-		// Tokenizer function prototypes
-		bool varFinder(string input);
-		void BEG(string input);
-		void PRINT(string input);
-		void assignmentCheck(string input);
-		bool varValidation(string input);
-		string getValue(string input);
-
 		/*
 		*	varFinder() - function that checks if the variable exists in the map
 		*	>> parameter - the input string "variable"
@@ -768,14 +760,14 @@ string evaluateFloatExp(stack <float> mystack, string postfix)
 int commands(string input) 
 {
 	regex beg("BEG [^\\|]+");		// BEG characters[any] to be a BEG command
-	regex disp("PRINT [^\\|]+");	// PRINT characters[any] to be a PRINT command
+	regex print("PRINT [^\\|]+");	// PRINT characters[any] to be a PRINT command
 	
 	int j = input.length();
 	
 	if (regex_match(input, beg))
 		return 1;
 
-	else if (regex_match(input, disp)) 
+	else if (regex_match(input, print)) 
 		return 2;
 
 	else if (input == "EXIT!") 
@@ -1119,13 +1111,12 @@ void postfixConversion(string expr)
 
 /*
 *	main() - The main function
-*	parameter: none
 */
 int main() 
 { 
-	string input;  		//user string input
-	int type = 0; 		//variable to use to store what type of command
-	Tokenizer tokens; 	//object from Tokenizer class	
+	string input;  		// user string input
+	int type = 0; 		// command type
+	Tokenizer tokens; 	// object from Tokenizer class	
 	
 	// Message for program start
 	cout << "\n\nThe SNOL environment is now active, you may proceed with giving your commands." << endl;
