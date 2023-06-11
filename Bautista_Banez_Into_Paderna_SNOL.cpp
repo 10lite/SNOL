@@ -15,8 +15,8 @@ void postfixConversion (string expr);
 bool isOperator (char ch);																		
 bool isVariable (string ch);																			
 bool isDigit (string ch);																	
-bool syntaxCheck (string input, int type);												 
-bool errorChecking (string postfix); 																													
+bool syntaxValidation (string input, int type);												 
+bool errorFinder (string postfix); 																													
 bool expressionDataType (string postfix);																		
 bool numDataType (float num);	
 
@@ -24,8 +24,8 @@ int commands (string input);
 int precedence (char value);		
 
 string conversionHelper (stack <char> stack, string infix);											
-string evalInt (stack <float> mystack, string postfix);									
-string evalFloat (stack <float> mystack, string postfix);	
+string evaluateIntExp (stack <float> mystack, string postfix);									
+string evaluateFloatExp (stack <float> mystack, string postfix);	
 
 /*
 *	Tokenizer - an object class that stores the tokenized input
@@ -35,12 +35,20 @@ class Tokenizer
 	unordered_map<string, string> key; // a hash type of mapping to identify input and mapped value
 
 	public:
+		// Tokenizer function prototypes
+		bool varFinder(string input);
+		void BEG(string input);
+		void PRINT(string input);
+		void assignmentCheck(string input);
+		bool varValidation(string input);
+		string getValue(string input);
+
 		/*
-		*	checkVar() - function that checks if the variable exists in the map
+		*	varFinder() - function that checks if the variable exists in the map
 		*	>> parameter - the input string "variable"
 		*	>> return - true if the variable exists, false if it does not
 		*/
-		bool checkVar(string input) 
+		bool varFinder(string input) 
 		{ 
 			if (key.find(input) == key.end())
 				return false;	// if the command exists then return 0
@@ -84,7 +92,7 @@ class Tokenizer
 			// remove "PRINT" from string
 			string temp = input.erase(0, 6);														
 			
-			if (checkVar(temp)) // print the variable if it exists
+			if (varFinder(temp)) // print the variable if it exists
 				cout << "SNOL> [" << temp << "] = " << key.at(temp) << endl; 						
 			
 			else if (isDigit(temp)) // print the digit
@@ -118,7 +126,7 @@ class Tokenizer
 
 					if (isVariable(temp)) // if the command is valid in terms of syntax
 					{																				
-						if (checkVar(temp)) 
+						if (varFinder(temp)) 
 						{																			
 							expr += " " + key.at(temp) + " " + input[i];	// add operator/variable	to the string									
 							flag = true;
@@ -163,7 +171,7 @@ class Tokenizer
 			// for the end part of the string
 			if (isVariable(temp)) 
 			{
-				if(checkVar(temp))
+				if(varFinder(temp))
 					expr += " " + key.at(temp);
 
 				else
@@ -191,7 +199,7 @@ class Tokenizer
 				string ans = "";
 				
 				// checks to see if all numbers have the same data types
-				if(!errorChecking(postfix)) 
+				if(!errorFinder(postfix)) 
 				{
 					cout << "Error!" << endl;
 					return;
@@ -202,7 +210,7 @@ class Tokenizer
 					if(expressionDataType(postfix)) 
 					{
 						stack <float> i;
-						ans = evalInt(i, postfix);
+						ans = evaluateIntExp(i, postfix);
 
 						if (ans == "Error!") 
 						{
@@ -215,7 +223,7 @@ class Tokenizer
 					{
 						// evalutating the postfix that involves a float
 						stack <float> f;
-						ans = evalFloat(f, postfix);
+						ans = evaluateFloatExp(f, postfix);
 
 						if (ans == "ERROR") 
 						{
@@ -231,11 +239,11 @@ class Tokenizer
 		} 
 		
 		/*
-		*	varCheck() - function that checks if the variable is valid
+		*	varValidation() - function that checks if the variable is valid
 		*	>> parameter - input string
 		*	>> return true if the variable is valid, false if not
 		*/
-		bool varCheck(string input) 
+		bool varValidation(string input) 
 		{ 
 			string var; 					
 			bool flag = false;
@@ -244,7 +252,7 @@ class Tokenizer
 			{												 
 				if (isOperator(input[i])) // checks if the character is an operator	
 				{ 											
-					if (isVariable(var) && !checkVar(var)) // checks if the string is a variable in syntax & if it exists		 
+					if (isVariable(var) && !varFinder(var)) // checks if the string is a variable in syntax & if it exists		 
 					{ 					
 						cout << "SNOL> Error! [" << var << "] is not defined!" << endl; 	
 						return false;
@@ -279,7 +287,7 @@ class Tokenizer
 			}
 
 			// check the final string
-			if (isVariable(var) && !checkVar(var)) 
+			if (isVariable(var) && !varFinder(var)) 
 			{ 												
 				cout << "SNOL> Error! [" << var << "] is not defined!" << endl;
 				return false;
@@ -387,11 +395,11 @@ int precedence (char value) // function that checks the precedence from infix to
 }
 
 /*
-*	errorChecking() - A function that checks for an error in the expression
+*	errorFinder() - A function that checks for an error in the expression
 *	>> parameter: postfix - the postfix expression
 *	>> return: true - no error, false - error
 */
-bool errorChecking (string postfix) 
+bool errorFinder (string postfix) 
 { 
     int prev, curr, j;
     string tmp, tmp1;
@@ -571,11 +579,11 @@ bool numDataType(float num)
 } 
 
 /*
-*	evalInt() - A function that evaluates an integer postfix expression
+*	evaluateIntExp() - A function that evaluates an integer postfix expression
 *	>> accepts a stack and a postfix expression
 *	>> returns the result of the expression
 */
-string evalInt(stack <float> mystack, string postfix)
+string evaluateIntExp(stack <float> mystack, string postfix)
 { 
 	string num;
 	
@@ -668,11 +676,11 @@ string evalInt(stack <float> mystack, string postfix)
 } 
 
 /*
-*	evalFloat() - A function that evaluates a floating-point postfix expression
+*	evaluateFloatExp() - A function that evaluates a floating-point postfix expression
 *	>> accepts a stack and a postfix expression
 *	>> returns the result of the expression
 */
-string evalFloat(stack <float> mystack, string postfix)
+string evaluateFloatExp(stack <float> mystack, string postfix)
 { 
 	string num;
 	
@@ -788,11 +796,11 @@ int commands(string input)
 } 
 
 /*
-*	syntaxCheck() - A function that checks if the input is a valid expression
+*	syntaxValidation() - A function that checks if the input is a valid expression
 *	>> accepts a string input and an integer type
 *	>> returns true if the input is valid, false if not
 */
-bool syntaxCheck(string input, int type) 
+bool syntaxValidation(string input, int type) 
 { 
 	// regex format that follows EBNF rule for variable - letter{(letter|digit)}
 	regex var("\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 	
@@ -1074,7 +1082,7 @@ void postfixConversion(string expr)
 	stack <char> s;
 	string postfix = conversionHelper(s, expr);
 
-	if (errorChecking(postfix) == false) // check for data type consistency
+	if (errorFinder(postfix) == false) // check for data type consistency
 	{
 		cout << "SNOL> Error! Operands must be of the same data type in an arithmetic operation!" << endl;
 		return;
@@ -1085,7 +1093,7 @@ void postfixConversion(string expr)
 		if (expressionDataType(postfix)) // int data type
 		{
 			stack <float> i;
-			string ans = evalInt(i, postfix);
+			string ans = evaluateIntExp(i, postfix);
 
 			if (ans == "ERROR") 
 			{
@@ -1097,7 +1105,7 @@ void postfixConversion(string expr)
 		else // float data type
 		{
 			stack <float> f;
-			string ans = evalFloat(f, postfix);
+			string ans = evaluateFloatExp(f, postfix);
 
 			if (ans == "ERROR") 
 			{
@@ -1139,13 +1147,13 @@ int main()
 					break;
 
 			case 1: // BEG command
-					if (syntaxCheck(input, type)) // Input syntax validation
+					if (syntaxValidation(input, type)) // Input syntax validation
 						tokens.BEG(input); 		   
 
 					break;  
 
 			case 2: // PRINT command
-					if (syntaxCheck(input, type)) // Input syntax validation
+					if (syntaxValidation(input, type)) // Input syntax validation
 						tokens.PRINT(input);
 
 					break;
@@ -1157,10 +1165,10 @@ int main()
 					break;
 
 			case 4:
-					if (!syntaxCheck(input, type))  // Input syntax guard clause
+					if (!syntaxValidation(input, type))  // Input syntax guard clause
 						break;
 					
-					if (tokens.varCheck(input)) // checks if the input has a variable
+					if (tokens.varValidation(input)) // checks if the input has a variable
 					{ 
 						input = tokens.getValue(input); // get the value of the variable
 						postfixConversion(input); // the input will be then converted into postfix 
@@ -1168,7 +1176,7 @@ int main()
 					break;
 
 			case 5: // Check assigned operations
-					if (syntaxCheck(input, type)) // Input syntax validation
+					if (syntaxValidation(input, type)) // Input syntax validation
 						tokens.assignmentCheck(input);	
 					
 					break;
