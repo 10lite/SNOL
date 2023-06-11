@@ -386,7 +386,6 @@ int precedence (char value) // function that checks the precedence from infix to
 	
 }
 
-// a function that checks the expression if there is an error
 /*
 *	errorChecking() - A function that checks for an error in the expression
 *	>> parameter: postfix - the postfix expression
