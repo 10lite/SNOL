@@ -35,14 +35,6 @@ class Tokenizer
 	unordered_map<string, string> key; // a hash type of mapping to identify input and mapped value
 
 	public:
-		// Tokenizer function prototypes
-		bool varFinder(string input);
-		void BEG(string input);
-		void PRINT(string input);
-		void assignmentCheck(string input);
-		bool varValidation(string input);
-		string getValue(string input);
-
 		/*
 		*	varFinder() - function that checks if the variable exists in the map
 		*	>> parameter - the input string "variable"
@@ -118,7 +110,7 @@ class Tokenizer
 
 				if (isOperator(input[i])) // if current character is an operator 		
 				{																		
-					if (input[i] == '-' && isdigit(input[i+1])) // if the character is a negative integer
+					if (input[i] == '-' && isdigit(input[i + 1])) // if the character is a negative integer
 					{ 													
 						temp += input[i];
 						continue;
@@ -128,9 +120,10 @@ class Tokenizer
 					{																				
 						if (varFinder(temp)) 
 						{																			
-							expr += " " + key.at(temp) + " " + input[i];	// add operator/variable	to the string									
+							expr += " " + key.at(temp) + " " + input[i]; // add operator/variable to the string									
 							flag = true;
 						} 
+
 						else 
 						{
 							cout << "SNOL> Error! [" << temp << "] is not defined!" << endl;					
@@ -168,10 +161,10 @@ class Tokenizer
 					temp += input[i]; // Add char to part to be assessed 
 			}
 
-			// for the end part of the string
+			// get the last part of the expression
 			if (isVariable(temp)) 
 			{
-				if(varFinder(temp))
+				if (varFinder(temp))
 					expr += " " + key.at(temp);
 
 				else
@@ -187,7 +180,7 @@ class Tokenizer
 			temp.erase();
 			input.erase();
 			
-			//conditions if the expression is only a digit with no operations
+			// conditions if the expression is only a digit with no operations
 			if (isDigit(expr)) 
 				key[var] = expr;
 			
@@ -199,11 +192,12 @@ class Tokenizer
 				string ans = "";
 				
 				// checks to see if all numbers have the same data types
-				if(!errorFinder(postfix)) 
+				if (!errorFinder(postfix)) 
 				{
-					cout << "Error!" << endl;
+					cout << "Error! Operands must be of the same data type in an arithmetic operation!" << endl;
 					return;
 				}
+
 				else
 				{
 					// checks to see the data type in the postfix expression
@@ -279,6 +273,17 @@ class Tokenizer
 						return false;
 					}
 
+					else if ((input[i + 1] == 'B') && (input[i + 2] == 'E') && (input[i + 3] == 'G')) // check if BEG function is after a whitespace
+					{
+						cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
+						return false;
+					}
+
+					else if ((input[i + 1] == 'P') && (input[i + 2] == 'R') && (input[i + 3] == 'I') && (input[i + 4] == 'N') && (input[i + 5] == 'T')) // check if PRINT function is after a whitespace
+					{
+						cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
+						return false;
+					}
 					else continue;
 				}
 
@@ -410,7 +415,6 @@ bool errorFinder (string postfix)
 		{   	 						 
             tmp += postfix[i];
             continue;
-
         } 
 
 		else 
@@ -418,16 +422,16 @@ bool errorFinder (string postfix)
             if (postfix[i] == ' ' && !tmp.empty()) // if char is space and temporary string is not empty, proceed to the if statement
 			{    							  
                 if (tmp.find(".") >= tmp.length()) // checks to see if the characters are integers	 								
-                    prev= 1; // chars are integer
+                    prev = 1; // chars are integer
 
                 else 
                     prev = 0; // chars are float															
                 
-                if ((i+1) < postfix.length()) 
+                if ((i + 1) < postfix.length()) 
 				{
-                    for (j = i+1; j < postfix.length(); j++) // finds the next number to compare with tmp
+                    for (j = i + 1; j < postfix.length(); j++) // finds the next number to compare with tmp
 					{  							 
-                        if (isdigit(postfix[j]) || postfix[j]=='.') // stores character into a temporary string if num or period
+                        if (isdigit(postfix[j]) || postfix[j] == '.') // stores character into a temporary string if num or period
 						{  				 
                             tmp1 += postfix[j];
                             continue;
@@ -492,9 +496,11 @@ string conversionHelper(stack <char> stack, string infix)
 	{ 								
         if ((isdigit(infix[i])) || (infix[i] == '.')) 			// if current char is a digit or a period
 		{					
-            postfix += infix[i];								// append character to postfix				
+            postfix += infix[i];								// append character to postfix		
+
             if (infix[i + 1] == '.') 
-				continue;										// if next char is a period, continue to the next iteration			
+				continue;										// if next char is a period, continue to the next iteration		
+
             else if (!isdigit(infix[i + 1])) 
 				postfix += " ";									// if next char is not a digit, append a space to postfix				
         }
@@ -621,8 +627,8 @@ string evaluateIntExp(stack <float> mystack, string postfix)
 			{																					
         		if (numDataType(val1)==true && numDataType(val2)==true)		// checks if both values are int
 				{													
-	        		int v1=val1; 
-	        		int v2=val2;
+	        		int v1 = val1; 
+	        		int v2 = val2;
 					mystack.push(v2%v1);							// pushes the modulo result
 				}
 
@@ -784,6 +790,9 @@ int commands(string input)
 	else if (input == "HELP")
 		return 6;
 	
+	else if (isVariable(input) || isDigit(input))
+		return 7;
+	
 	for (int i = 0; i < j; i++) // checks if the input is an assignment
 	{  
 		if (isOperator(input[i]))		// calculate if it starts with an operator
@@ -792,6 +801,7 @@ int commands(string input)
 		if (input[i] == '=')			// it is an assignment if it starts with an equal "=" sign
 			return 5;	
 	}
+	
 	return 0;	
 } 
 
@@ -846,7 +856,7 @@ bool syntaxValidation(string input, int type)
 	{ 
 		for (int i = 0; i < input.length(); i++) 
 		{
-			if (parenthesis < 0) // if parenthesis has no pari
+			if (parenthesis < 0) // if parenthesis has no pair
 			{ 
 				cout << "SNOL> Missing parenthesis pair!" << endl; 
 				return false;
@@ -918,7 +928,7 @@ bool syntaxValidation(string input, int type)
 
 	else if (type == 5) // Assignment Operation
 	{ 
-		for (int i = 0, equals = 0; i < input.size(); i++) 
+		for (int i = 0, equals = 0, period = 0; i < input.size(); i++) 
 		{
 			if (parenthesis < 0) // Error check for unpaired paranthesis
 			{ 
@@ -942,9 +952,9 @@ bool syntaxValidation(string input, int type)
 			{	
 				equals++;
 
-				if (equals > 1) // Error check for more thane one equal sign
+				if (equals > 1) // Error check for more than one equal sign
 				{
-					cout << "SNOL> Invalid! more than one '=' in the expression." << endl;
+					cout << "SNOL> Invalid! More than one '=' in the expression." << endl;
 					return false;
 				}
 
@@ -1143,47 +1153,50 @@ int main()
 		switch (type) 
 		{ 		
 			case 0: // Invalid command input
-					cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl; 
-					break;
+				cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl; 
+				break;
 
 			case 1: // BEG command
-					if (syntaxValidation(input, type)) // Input syntax validation
-						tokens.BEG(input); 		   
+				if (syntaxValidation(input, type)) // Input syntax validation
+					tokens.BEG(input); 		   
 
-					break;  
+				break;  
 
 			case 2: // PRINT command
-					if (syntaxValidation(input, type)) // Input syntax validation
-						tokens.PRINT(input);
+				if (syntaxValidation(input, type)) // Input syntax validation
+					tokens.PRINT(input);
 
-					break;
+				break;
 				
 			case 3: // EXIT command
-					cout << "\nInterpreter is now terminated..." << endl;
-					return 0;
+				cout << "\nInterpreter is now terminated..." << endl;
+				return 0;
 
-					break;
+				break;
 
-			case 4:
-					if (!syntaxValidation(input, type))  // Input syntax guard clause
-						break;
-					
-					if (tokens.varValidation(input)) // checks if the input has a variable
-					{ 
-						input = tokens.getValue(input); // get the value of the variable
-						postfixConversion(input); // the input will be then converted into postfix 
-					}
+			case 4: // Check expression
+				if (!syntaxValidation(input, type))  	// Input syntax guard clause
 					break;
+				
+				if (tokens.varValidation(input)) 		// checks if the input has a variable
+				{ 
+					input = tokens.getValue(input); 	// get the value of the variable
+					postfixConversion(input); 			// convert to postfix and evaluate
+				}
+				break;
 
-			case 5: // Check assigned operations
-					if (syntaxValidation(input, type)) // Input syntax validation
-						tokens.assignmentCheck(input);	
-					
-					break;
+			case 5: // Check assignment operation
+				if (syntaxValidation(input, type)) // Input syntax validation
+					tokens.assignmentCheck(input);	
+				
+				break;
 
-			case 6:
-					manual(); // user manual
-					break;
+			case 6: // User manual
+				manual(); 
+				break;
+
+			case 7: // Simple expression
+				break;
 		}
 	}
 }
