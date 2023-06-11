@@ -96,11 +96,11 @@ class Tokenizer
 		} 
 
 		/*
-		*	assignmentCheck() - function that handles the assignment command
+		*	assignmentOp() - function that handles the assignment command
 		*	>> parameter - the input string "variable = expression"
 		*	>> return - none
 		*/
-		void assignmentCheck(string input) 
+		void assignmentOp(string input) 
 		{ 													
 			string temp, expr, var;
 			bool flag = false;
@@ -1187,7 +1187,7 @@ int main()
 
 			case 5: // Check assignment operation
 				if (syntaxValidation(input, type)) // Input syntax validation
-					tokens.assignmentCheck(input);	
+					tokens.assignmentOp(input);	
 				
 				break;
 
