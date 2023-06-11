@@ -17,8 +17,8 @@ bool isVariable (string ch);
 bool isDigit (string ch);																	
 bool syntaxCheck (string input, int type);												 
 bool errorChecking (string postfix); 																													
-bool intOrFloat (string postfix);																		
-bool iftype (float num);	
+bool expressionDataType (string postfix);																		
+bool numDataType (float num);	
 
 int commands (string input);																																			
 int precedence (char value);		
@@ -199,7 +199,7 @@ class Tokenizer
 				else
 				{
 					// checks to see the data type in the postfix expression
-					if(intOrFloat(postfix)) 
+					if(expressionDataType(postfix)) 
 					{
 						stack <float> i;
 						ans = evalInt(i, postfix);
@@ -460,11 +460,11 @@ bool errorChecking (string postfix)
 }
 
 /*
-*	intOrFloat() - A function that checks the data type of the expression
+*	expressionDataType() - A function that checks the data type of the expression
 *		>> accepts a postfix string as a parameter
 *		>> returns true if the number is an integer, false if it is a floating-point
 */
-bool intOrFloat(string postfix) 
+bool expressionDataType(string postfix) 
 { 
     return (postfix.find('.') >= postfix.length()); // returns true = int, false = floating-point				
     
@@ -561,11 +561,11 @@ string conversionHelper(stack <char> stack, string infix)
 }
 
 /*
-*	iftype() - A function that checks if the value is an integer or a floating-point
+*	numDataType() - A function that checks if the value is an integer or a floating-point
 *	>> accepts a number
 *	>> returns true if the value is an integer, false if it is a floating-point
 */
-bool iftype(float num)
+bool numDataType(float num)
 {													
 	return num == (float)(int)num; 
 } 
@@ -611,7 +611,7 @@ string evalInt(stack <float> mystack, string postfix)
         	
         	if (postfix[i]=='%')									// proceeds to the function if a modulo is encountered	
 			{																					
-        		if (iftype(val1)==true && iftype(val2)==true)		// checks if both values are int
+        		if (numDataType(val1)==true && numDataType(val2)==true)		// checks if both values are int
 				{													
 	        		int v1=val1; 
 	        		int v2=val2;
@@ -651,7 +651,7 @@ string evalInt(stack <float> mystack, string postfix)
 	float ans=mystack.top();
 	 
 	// returning the evaluated expressions
-	if (iftype(ans)==true)
+	if (numDataType(ans)==true)
 	{
 		int ans2=mystack.top();
 		mystack.pop();
@@ -735,7 +735,7 @@ string evalFloat(stack <float> mystack, string postfix)
 	float ans = mystack.top();
 	
 	// returning the evaluated expressions
-	if (iftype(ans) == true)
+	if (numDataType(ans) == true)
 	{
 		int ans2 = mystack.top();
 		mystack.pop();
@@ -1082,7 +1082,7 @@ void postfixConversion(string expr)
 
 	else // check if expression data type is int or float
 	{
-		if (intOrFloat(postfix)) // int data type
+		if (expressionDataType(postfix)) // int data type
 		{
 			stack <float> i;
 			string ans = evalInt(i, postfix);
