@@ -9,31 +9,37 @@
 using namespace std;
 
 // Function Prototypes
-void guide();	
-void checkCalc (string expr);	
+void manual();	
+void postfixConversion (string expr);	
 
 bool isOperator (char ch);																		
 bool isVar (string ch);																			
 bool isDigit (string ch);																	
 bool syntaxCheck (string input, int type);												 
 bool errorChecking (string postfix); 																													
-bool dataType (string postfix);																		
+bool intOrFloat (string postfix);																		
 bool iftype (float num);	
 
-int commandCheck (string input);																																			
+int commands (string input);																																			
 int precedence (char value);		
 
-string inftopost (stack <char> stack, string infix);											
+string conversionHelper (stack <char> stack, string infix);											
 string evalInt (stack <float> mystack, string postfix);									
 string evalFloat (stack <float> mystack, string postfix);	
 
-class Tokenizer // Object class to store tokenized input
+/*
+*	Tokenizer - an object class that stores the tokenized input
+*/
+class Tokenizer 
 { 
 	unordered_map<string, string> key; // a hash type of mapping to identify input and mapped value
 
 	public:
-
-		// function for traversing the map if a certain keyword exists
+		/*
+		*	checkVar() - function that checks if the variable exists in the map
+		*	>> parameter - the input string "variable"
+		*	>> return - true if the variable exists, false if it does not
+		*/
 		bool checkVar(string input) 
 		{ 
 			if (key.find(input) == key.end())
@@ -43,47 +49,57 @@ class Tokenizer // Object class to store tokenized input
 				return true;
 		}
 
-		// BEG function
+		/*
+		*	BEG() - function that handles the BEG command
+		*	>> parameter - the input string "BEG <variable>"
+		*	>> return - none
+		*/
 		void BEG(string input)
 		{
-			// get the BEG function
-			string temp = input.erase(0, 4); // remove											
+			// remove "BEG" from string
+			string temp = input.erase(0, 4); 										
 			string tokens;
 			
-			cout << "SNOL> Please enter value for [" << temp << "]: "; // storing the input value
+			// prompt for input
+			cout << "SNOL> Please enter value for [" << temp << "]\nInput: "; 
 			cin >> tokens; 			
-			cout << "Input: " << tokens << endl;																
 			cin.clear();
 
-			// Clear whitespace
-			cin.ignore(numeric_limits<streamsize>::max(), '\n'); 	
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // clear whitespace	
 
-			if (isDigit(tokens)) //checks to see if the value entered is really a number	
-				key[temp] = tokens; 	
+			if (isDigit(tokens)) // if input is digit, assign value to variable
+				key[temp] = tokens; 
 										 
-			else
+			else // error if input is not a digit
 				cout << "SNOL> Error! [" << temp << "] integer or float values only." << endl;
 		}
 
-		// PRINT function
+		/*
+		*	PRINT() - function for handles the PRINT command
+		*	>> parameter - the input string "PRINT <variable>"
+		*	>> return - none
+		*/
 		void PRINT(string input) 
 		{ 
-			// get the PRINT function
+			// remove "PRINT" from string
 			string temp = input.erase(0, 6);														
 			
-			// print the variable if it exists
-			if (checkVar(temp)) 
+			if (checkVar(temp)) // print the variable if it exists
 				cout << "SNOL> [" << temp << "] = " << key.at(temp) << endl; 						
 			
-			else if (isDigit(temp))   //checks to see if the value entered is really a number
+			else if (isDigit(temp)) // print the digit
 				cout << "SNOL> [" << temp << "] = " << temp << endl; 								
 			
-			else
+			else // error if variable does not exist	
 				cout << "SNOL> Error! [" << temp << "] is not defined!" << endl;	
 						
 		} 
 
-		// asisgnment of the variable function
+		/*
+		*	assignmentCheck() - function that handles the assignment command
+		*	>> parameter - the input string "variable = expression"
+		*	>> return - none
+		*/
 		void assignmentCheck(string input) 
 		{ 													
 			string temp, expr, var;
@@ -104,16 +120,18 @@ class Tokenizer // Object class to store tokenized input
 					{																				
 						if (checkVar(temp)) 
 						{																			
-							expr += " " + key.at(temp) + " " + input[i];	//add operator/variable	to the string									
+							expr += " " + key.at(temp) + " " + input[i];	// add operator/variable	to the string									
 							flag = true;
 						} 
-						else {
+						else 
+						{
 							cout << "SNOL> Error! [" << temp << "] is not defined!" << endl;					
 							return;
 						}
 					}
 
-					else {
+					else 
+					{
 						expr += " " + temp + " " + input[i]; // direct assignment	
 						flag = true;
 					}
@@ -131,6 +149,7 @@ class Tokenizer // Object class to store tokenized input
 
 					else continue;
 				}	
+
 				else if (input[i] == '=') // get variable name
 				{
 					var += temp;	
@@ -168,7 +187,7 @@ class Tokenizer // Object class to store tokenized input
 			{
 				// infix to postfix conversion
 				stack <char> s;
-				string postfix = inftopost(s, expr);
+				string postfix = conversionHelper(s, expr);
 				string ans = "";
 				
 				// checks to see if all numbers have the same data types
@@ -180,7 +199,7 @@ class Tokenizer // Object class to store tokenized input
 				else
 				{
 					// checks to see the data type in the postfix expression
-					if(dataType(postfix)) 
+					if(intOrFloat(postfix)) 
 					{
 						stack <float> i;
 						ans = evalInt(i, postfix);
@@ -211,7 +230,11 @@ class Tokenizer // Object class to store tokenized input
 			}
 		} 
 		
-		// checks the variable of the command entered by the user
+		/*
+		*	varCheck() - function that checks if the variable is valid
+		*	>> parameter - input string
+		*	>> return true if the variable is valid, false if not
+		*/
 		bool varCheck(string input) 
 		{ 
 			string var; 					
@@ -264,20 +287,24 @@ class Tokenizer // Object class to store tokenized input
 			return true;
 		} 
 
-		// a function to separates the value and store it
-		string getVal(string input) 
+		/*
+		*	getValue() - a function that separates a value from a command
+		*	parameter: string input - the command inputted by the user
+		*	return: string result - the value of the command
+		*/
+		string getValue(string input) 
 		{
 			string temp, result;
 			
 			for (int i = 0; i < input.length(); i++) // loop that will traverse the command
 			{											
-				if(input[i] == '-' && isdigit(input[i + 1])) // negative number
+				if (input[i] == '-' && isdigit(input[i + 1])) // negative number
 				{									
 					temp += input[i];
 					continue;
 				}
 
-				if(isOperator(input[i])) // checks if the current command is an operator  
+				if (isOperator(input[i])) // checks if the current command is an operator  
 				{	 	
 					if (isVar(temp)) // checks if the stored string is a variable then stores it with the existing varibable
 						result += " " + key.at(temp) + " " + input[i]; 
@@ -296,8 +323,8 @@ class Tokenizer // Object class to store tokenized input
 				temp += input[i]; // stores the command inputted by the user
 			}
 
-			if(isVar(temp))
-				result += " " + key.at(temp);
+			if (isVar(temp))
+				result += " " + key.at(temp); 
 
 			else
 				result += " " + temp;
@@ -307,31 +334,45 @@ class Tokenizer // Object class to store tokenized input
 		} 
 															
 };
-							
-void guide() 
+
+/*
+*	manual() - displays the user manual of the SNOL program
+*	>> no parameters
+*	>> displays the user manual of the SNOL program
+*/			
+void manual() 
 { 
-	cout << endl << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SNOL Overview & Guidelines~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl; 
-	cout << "\t1. Format >> Separate items with spaces. However, extra spaces will be disregarded." << endl;
-	cout << "\t\tExample: var = 17 -> contains one space between every word" << endl;
-	cout << "\t2. Case Sensitive >> All words are case sensitive." << endl;
-	cout << "\t\tExample: num, NUM, and nUm are distinct from one another. They will be addressed differently." << endl;
-	cout << "\t3. Data Type >> There are two data types only for SNOL integer and floating point" << endl;
-	cout << "\t\tExample: \n\t\tnum = 10 + 7 -> Correct since both are integers" << endl << "\t\tNUM = 10.3 + 7.5 -> Correct since both are floating-point" << endl << "\t\tnUm = 10 + 7.3 -> Invalid. Their data types are both different" <<endl;
-	cout << "\t4. Operands >> Operands must be of the same type for arithemetic operations:" << endl;
-	cout << "\t5. Variables >> Variables can be number or letters. However, it should start with letters, not numbers." << endl;
-	cout << "\t\tExample: \n\t\tnum -> Correct\n\t\t!num -> Incorrect \n\t\tNote: Variables should be DECLARED first before using." << endl;
-	cout << "\t6. Invalid Syntax >> Your command should be logical and acceptable" << endl;
- 	cout << "\t7. SPECIAL KEYWORDS >> This program has only 4 special keywords, namely: PRINT, BEG, HELP, and EXIT!" << endl;
-	cout << "\t       > PRINT: Display the targeted variable or literal." << endl;
-	cout << "\t\t\tExample: num = 8\n\t\t\tPRINT num" << endl;
-	cout << "\t       > BEG: Asks for a value" << endl;
-	cout << "\t       > HELP: Give the user an idea on how to use the program." << endl;
-	cout << "\t       > EXIT!: Terminate the Program" << endl;
-	cout << endl << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SNOL Overview & Guidelines~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl; 
+	cout << endl << ">> SNOL Overview" << endl
+		 << "\t1. Format >> Separate items with spaces. However, extra spaces will be disregarded." << endl
+		 << "\t\tExample: var = 17 -> contains one space between every word" << endl
+
+		 << "\t2. Case Sensitive >> All words are case sensitive." << endl
+		 << "\t\tExample: num, NUM, and nUm are distinct from one another. They will be addressed differently." << endl
+
+		 << "\t3. Data Type >> There are two data types only for SNOL integer and floating point" << endl
+		 << "\t\tExample: \n\t\tnum = 10 + 7 -> Correct since both are integers\n\t\tNUM = 10.3 + 7.5 -> Correct since both are floating-point\n\t\tnUm = 10 + 7.3 -> Invalid. Their data types are both different" << endl 
+
+		 << "\t4. Operands >> Operands must be of the same type for arithemetic operations:" << endl
+
+		 << "\t5. Variables >> Variables can be number or letters. However, it should start with letters, not numbers." << endl
+		 << "\t\tExample: \n\t\tnum -> Correct\n\t\t!num -> Incorrect \n\t\tNote: Variables should be DECLARED first before using." << endl
+
+		 << "\t6. Invalid Syntax >> Your command should be logical and acceptable" << endl
+
+ 		 << "\t7. SPECIAL KEYWORDS >> This program has only 4 special keywords, namely: PRINT, BEG, HELP, and EXIT!" << endl
+		 << "\t       > PRINT: Display the targeted variable or literal." << endl
+		 << "\t\t\t   	Example: num = 8\n\t\t\tPRINT num" << endl
+		 << "\t       > BEG: Asks for a value" << endl
+		 << "\t       > HELP: Give the user an idea on how to use the program." << endl
+		 << "\t       > EXIT!: Terminate the Program" << endl;
 	system("pause"); 
 }
 
-
+/*
+*	precedence() - A function that checks the precedence of the operators
+*		>> parameter: value - the operator
+*		>> return: 1 - lower precedence, 2 - higher precedence, -1 - invalid
+*/
 int precedence (char value) // function that checks the precedence from infix to postfix
 {		 
  	if (value == '+' || value == '-')  // lower precedence
@@ -346,11 +387,15 @@ int precedence (char value) // function that checks the precedence from infix to
 }
 
 // a function that checks the expression if there is an error
+/*
+*	errorChecking() - A function that checks for an error in the expression
+*	>> parameter: postfix - the postfix expression
+*	>> return: true - no error, false - error
+*/
 bool errorChecking (string postfix) 
 { 
-    int prev, curr;
+    int prev, curr, j;
     string tmp, tmp1;
-    int j;
     
     for (int i = 0; i < postfix.length(); i++) // a loop that checks each character to see if all the numbers have the same data type	
 	{         	 						
@@ -377,7 +422,7 @@ bool errorChecking (string postfix)
 					{  							 
                         if (isdigit(postfix[j]) || postfix[j]=='.') // stores character into a temporary string if num or period
 						{  				 
-                            tmp1+= postfix[j];
+                            tmp1 += postfix[j];
                             continue;
                         } 
 
@@ -415,103 +460,122 @@ bool errorChecking (string postfix)
     return true;
 }
 
-
-bool dataType(string postfix) // a boolean function that checks whether the types of values are integer or a floating-point
+/*
+*	intOrFloat() - A function that checks the data type of the expression
+*		>> accepts a postfix string as a parameter
+*		>> returns true if the number is an integer, false if it is a floating-point
+*/
+bool intOrFloat(string postfix) 
 { 
     return (postfix.find('.') >= postfix.length()); // returns true = int, false = floating-point				
     
 }
 
-// a function for infix to postfix
-string inftopost(stack <char> stack, string infix) 
+/*
+*	conversionHelper() - A helper function that converts an infix expression to postfix
+*	>> accepts an empty character stack and an infix expression 
+*	>> returns a postfix expression
+*/
+string conversionHelper(stack <char> stack, string infix) 
 { 
-	string postfix;
+	string postfix;	// a string that will hold the postfix expression
 	
-	// checks the string per character
+	// Traverse the infix expression
     for (int i = 0; i < infix.length(); i++) 
 	{ 								
-        if ((isdigit(infix[i])) || (infix[i] == '.')) 			// checks to see if the current character is a period or a digit	
+        if ((isdigit(infix[i])) || (infix[i] == '.')) 			// if current char is a digit or a period
 		{					
-            postfix += infix[i];								// appends the current character to the postfix string				
-            if (infix[i + 1] == '.') continue;					// checks to see if the next character is a period				
-            else if (!isdigit(infix[i + 1])) postfix += " ";	// checks to see if the next character is not a digit				
+            postfix += infix[i];								// append character to postfix				
+            if (infix[i + 1] == '.') 
+				continue;										// if next char is a period, continue to the next iteration			
+            else if (!isdigit(infix[i + 1])) 
+				postfix += " ";									// if next char is not a digit, append a space to postfix				
         }
 
-        else if (infix[i] == ' ') 								// if the current char is a whitespace then ignore			
+        else if (infix[i] == ' ') 								// if current char is a whitespace then continue to the next iteration		
             continue;
         
-        else if (infix[i] == '(') 								// checks for the open parenthesis 			
+        else if (infix[i] == '(') 								// if current char is an open parenthesis, append it to the stack		
             stack.push(infix[i]);											
         
-        else if (infix[i] == ')') 								// checks for the close parenthesis		
+        else if (infix[i] == ')') 								// if current char is a close parenthesis, pop the stack until it meets the open parenthesis
 		{									
-            while ((stack.top() != '(') && (!stack.empty())) 	// loop until it meets the pair or if the stack is empty	
+            while ((stack.top() != '(') && (!stack.empty())) 	
 			{			
                 char temp = stack.top();
                 postfix += temp;								// append the top of the stack to the postfix string		
-                postfix += " ";									// adds spaces after each append	
+                postfix += " ";									// add space after each append	
                 stack.pop();
             }
 
-            if (stack.top() == '(') 							// pops if the pair parenthesis meet up		
+            if (stack.top() == '(') 							// if the top of the stack is an open parenthesis, pop it
                 stack.pop();
         }
 
-        else 													// if the current infix is an operator	
+        else 													// if current char is an operator	
 		{ 														
-            if (infix[i] == '-' && isdigit(infix[i + 1])) 
+            if (infix[i] == '-' && isdigit(infix[i + 1])) 		// if current char & char+1 is a negative number
 			{
-                postfix += infix[i];
+                postfix += infix[i]; // append							
                 continue;
             }
 
-            if (stack.empty()) 										
-                stack.push(infix[i]);
+            if (stack.empty()) 									// if stack is empty, push the current char to the stack				
+                stack.push(infix[i]);	
             
-            else 
+            else 												
 			{															
-                if (precedence(infix[i]) > precedence(stack.top())) 		// checks precedence
-                    stack.push(infix[i]);									// push to the stack if the precedence of the top of the stack < current character
+                if (precedence(infix[i]) > precedence(stack.top())) 		// current operator has higher precedence than the top of the stack
+                    stack.push(infix[i]); // append									
                 
-                else if (precedence(infix[i]) == precedence(stack.top())) 	// checks to see if the precedence of the current character is equal to the stack top
+                else if (precedence(infix[i]) == precedence(stack.top())) 	// equal precedence
 				{ 	
                     postfix += stack.top();									
-                    postfix += " ";
+                    postfix += " "; 
                     stack.pop();
-                    stack.push(infix[i]);									
+                    stack.push(infix[i]); // append									
                 }
-                else 														// checks to see if the precedence is less than the top of the stack	
+
+                else 														// less precedence
 				{													
                     while ((!stack.empty()) && (precedence(infix[i]) < precedence(stack.top()))) 
 					{
                         postfix += stack.top();
                         postfix += " ";
-                        stack.pop();
+                        stack.pop(); // pop the stack until the current operator has higher precedence than the top of the stack
                     }
 
-                    stack.push(infix[i]);
+                    stack.push(infix[i]);  // append
                 }
             }
         }
     }
     
-    while (!stack.empty()) // pops the remaining operators		
+    while (!stack.empty()) // pop remaining operators		
 	{												
         postfix += stack.top();
         postfix += " ";
         stack.pop();
     }
     
-    return postfix;
+    return postfix; // return postfix expression
 }
 
-bool iftype(float num) // a function that checks if the value is an integer
+/*
+*	iftype() - A function that checks if the value is an integer or a floating-point
+*	>> accepts a number
+*	>> returns true if the value is an integer, false if it is a floating-point
+*/
+bool iftype(float num)
 {													
-	return num == (float)(int)num; // returns true if num = int
-																	
+	return num == (float)(int)num; 
 } 
 
-// a function for elevating the integer postfix
+/*
+*	evalInt() - A function that evaluates an integer postfix expression
+*	>> accepts a stack and a postfix expression
+*	>> returns the result of the expression
+*/
 string evalInt(stack <float> mystack, string postfix)
 { 
 	string num;
@@ -546,7 +610,7 @@ string evalInt(stack <float> mystack, string postfix)
         	int val2 = mystack.top();	
         	mystack.pop();
         	
-        	if (postfix[i]=='%')										// proceeds to the function if a modulo is encountered	
+        	if (postfix[i]=='%')									// proceeds to the function if a modulo is encountered	
 			{																					
         		if (iftype(val1)==true && iftype(val2)==true)		// checks if both values are int
 				{													
@@ -604,7 +668,11 @@ string evalInt(stack <float> mystack, string postfix)
 	}
 } 
 
-// a function for elevating the integer postfix
+/*
+*	evalFloat() - A function that evaluates a floating-point postfix expression
+*	>> accepts a stack and a postfix expression
+*	>> returns the result of the expression
+*/
 string evalFloat(stack <float> mystack, string postfix)
 { 
 	string num;
@@ -661,16 +729,14 @@ string evalFloat(stack <float> mystack, string postfix)
 					mystack.push(val2/val1); 
 					break; 
             }
-
             i++;
 		}
 	}
-	
 	// stores the top of the stack
-	float ans=mystack.top();
+	float ans = mystack.top();
 	
-	// returning th evaluated expressions
-	if (iftype(ans)==true)
+	// returning the evaluated expressions
+	if (iftype(ans) == true)
 	{
 		int ans2 = mystack.top();
 		mystack.pop();
@@ -687,9 +753,13 @@ string evalFloat(stack <float> mystack, string postfix)
 	}	
 } 
 
-int commandCheck(string input) 
+/*
+*	commands() - A function that checks if the input is a command
+*	>> accepts a string input
+*	>> returns an integer for a switch case
+*/
+int commands(string input) 
 {
-	
 	regex beg("BEG [^\\|]+");		// BEG characters[any] to be a BEG command
 	regex disp("PRINT [^\\|]+");	// PRINT characters[any] to be a PRINT command
 	
@@ -698,16 +768,16 @@ int commandCheck(string input)
 	if (regex_match(input, beg))
 		return 1;
 
-	else if (regex_match(input, disp))
+	else if (regex_match(input, disp)) 
 		return 2;
 
-	else if (input == "EXIT!")
+	else if (input == "EXIT!") 
 		return 3;
 	 
 	else if (input == "HELP")
 		return 6;
 	
-	for (int i = 0; i < j; i++) 
+	for (int i = 0; i < j; i++) // checks if the input is an assignment
 	{  
 		if (isOperator(input[i]))		// calculate if it starts with an operator
 			return 4; 					
@@ -715,15 +785,22 @@ int commandCheck(string input)
 		if (input[i] == '=')			// it is an assignment if it starts with an equal "=" sign
 			return 5;	
 	}
-
 	return 0;	
 } 
 
-// Checks if the input is a valid command
+/*
+*	syntaxCheck() - A function that checks if the input is a valid expression
+*	>> accepts a string input and an integer type
+*	>> returns true if the input is valid, false if not
+*/
 bool syntaxCheck(string input, int type) 
 { 
-	regex var("\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 		// regex format that follows EBNF rule for variable: letter{(letter|digit)}
-	regex digit("\\(*-?[0-9][0-9]*(\\.[0-9]+)?\\)*"); 	// regex format that follows EBNF rule of data type int: [-]digit{digit} and for data type float is :[-]digit{digit}.{digit} 
+	// regex format that follows EBNF rule for variable - letter{(letter|digit)}
+	regex var("\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 	
+	// regex format that follows EBNF rule of 
+	// int - [-]digit{digit} 
+	// float - [-]digit{digit}.{digit} 	
+	regex digit("\\(*-?[0-9][0-9]*(\\.[0-9]+)?\\)*"); 	
 	
 	int parenthesis = 0; 
 	string temp; 
@@ -735,16 +812,18 @@ bool syntaxCheck(string input, int type)
 
 		if (regex_match(temp, var)) // returns true if the regular expression var match against temp variable 
 			return true;
-		 
-		else  // otherwise returns false and print error
+
+		else  // else return false and print error
+		{
 			cout << "SNOL> [" << temp << "]" << " is not a valid variable name!" << endl;
 			return false;
+		}
 	}
 
 	// PRINT Command
 	else if (type == 2) 
 	{	
-		temp = input.erase(0, 6); // deletes the content of the string in this range (Deletes the word BEG)
+		temp = input.erase(0, 6); // deletes the content of the string in this range (Deletes the word PRINT)
 
 		if (regex_match(temp, var) || regex_match(temp, digit)) // returns true if the regular expression var match against temp variable 
 			return true; 
@@ -925,9 +1004,11 @@ bool syntaxCheck(string input, int type)
 	else return false;
 } 
 
-// Check if the character is a operator. 
-// Return true if it is a operator.
-// Return false if not.
+/*
+*	isOperator() - a function that checks if the character is an operator
+*	parameter: char ch - the character to be checked
+*	return: true if the character is an operator, false if not
+*/
 bool isOperator (char ch) 
 {	
 	switch (ch) 
@@ -947,10 +1028,16 @@ bool isOperator (char ch)
 	}
 } 
 
-// Checks if the string is a variable
+/*
+*	isVar() - a function that checks if the string is a valid variable
+*	parameter: string ch - the string to be checked
+*	return: true if the string is a variable, false if not
+*/
 bool isVar(string ch) 
 {	
-	regex var(" *\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); // regex format that follows EBNF rule for variable: letter{(letter|digit)}
+	// regex format that follows EBNF rule for 
+	// variable: 	letter{(letter|digit)}
+	regex var(" *\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 
 
 	if (regex_match(ch, var))
 		return true; // returns true if the string match
@@ -959,10 +1046,17 @@ bool isVar(string ch)
 		return false; // returns false if not	
 } 
 
-// Checks if the string is a digit
+/*
+*	isDigit() - a function that checks if the string is a valid digit
+*	parameter: string ch - the string to be checked
+*	return: true if the string is a digit, false if not
+*/ 
 bool isDigit(string ch) 
 {	
-	regex digit(" *\\(*-?[0-9][0-9]*(\\.[0-9]+)?\\)*");	 // regex format that follows EBNF rule of data type int: [-]digit{digit} and for data type float is :[-]digit{digit}.{digit} 
+	// regex format that follows EBNF rule for
+	// data type int: 	[-]digit{digit}
+	// data type float: [-]digit{digit}.{digit}
+	regex digit(" *\\(*-?[0-9][0-9]*(\\.[0-9]+)?\\)*");	  
 
 	if (regex_match(ch, digit)) 
 		return true;
@@ -971,23 +1065,25 @@ bool isDigit(string ch)
 		return false;
 }
 
-// Function that converts the expression to postfix
-void checkCalc(string expr)
+/*
+*	postfixConversion() - a function that converts an infix expression to postfix expression 
+*	parameter: string expr - the infix expression
+*	return: none
+*/
+void postfixConversion(string expr)
 {
 	stack <char> s;
-	string postfix = inftopost(s, expr);
+	string postfix = conversionHelper(s, expr);
 
-	// Checks if they have same data type
-	if (errorChecking(postfix) == false) 
+	if (errorChecking(postfix) == false) // check for data type consistency
 	{
 		cout << "SNOL> Error! Operands must be of the same data type in an arithmetic operation!" << endl;
 		return;
 	}
 
-	// Checks whether the data type is float or int
-	else 
+	else // check if expression data type is int or float
 	{
-		if (dataType(postfix)) // if int data type, it will then evaluate/calculate
+		if (intOrFloat(postfix)) // int data type
 		{
 			stack <float> i;
 			string ans = evalInt(i, postfix);
@@ -999,7 +1095,7 @@ void checkCalc(string expr)
 			}
 		}
 
-		else // if float data type, it will then evaluate/calculate
+		else // float data type
 		{
 			stack <float> f;
 			string ans = evalFloat(f, postfix);
@@ -1010,12 +1106,14 @@ void checkCalc(string expr)
 				return;
 			}
 		}
-
 		return;
 	}
 } 
 
-// Main function
+/*
+*	main() - The main function
+*	parameter: none
+*/
 int main() 
 { 
 	string input;  		//user string input
@@ -1023,7 +1121,7 @@ int main()
 	Tokenizer tokens; 	//object from Tokenizer class	
 	
 	// Message for program start
-	cout << "The SNOL environment is now active, type HELP to get an overview before proceeding of giving your commands." << endl;
+	cout << "\n\nThe SNOL environment is now active, you may proceed with giving your commands." << endl;
 	
 	while (input != "EXIT!") // loops until user input is "EXIT!""
 	{ 
@@ -1031,8 +1129,8 @@ int main()
 		cout << "\nCommand: ";   
 		getline(cin, input); 
 		
-		// Input validation
-		type = commandCheck(input); // checks whether  user input has its appropriate command
+		// Command validation
+		type = commands(input); // checks whether user input is an appropriate command
 		
 		// Switch case for the command specified by the user
 		switch (type) 
@@ -1065,8 +1163,8 @@ int main()
 					
 					if (tokens.varCheck(input)) // checks if the input has a variable
 					{ 
-						input = tokens.getVal(input); // the input will go to getVal function 
-						checkCalc(input); // the input will be then converted into postfix 
+						input = tokens.getValue(input); // get the value of the variable
+						postfixConversion(input); // the input will be then converted into postfix 
 					}
 					break;
 
@@ -1077,7 +1175,7 @@ int main()
 					break;
 
 			case 6:
-					guide(); // help function
+					manual(); // user manual
 					break;
 		}
 	}
