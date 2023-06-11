@@ -13,7 +13,7 @@ void manual();
 void postfixConversion (string expr);	
 
 bool isOperator (char ch);																		
-bool isVar (string ch);																			
+bool isVariable (string ch);																			
 bool isDigit (string ch);																	
 bool syntaxCheck (string input, int type);												 
 bool errorChecking (string postfix); 																													
@@ -116,7 +116,7 @@ class Tokenizer
 						continue;
 					}
 
-					if (isVar(temp)) // if the command is valid in terms of syntax
+					if (isVariable(temp)) // if the command is valid in terms of syntax
 					{																				
 						if (checkVar(temp)) 
 						{																			
@@ -161,7 +161,7 @@ class Tokenizer
 			}
 
 			// for the end part of the string
-			if (isVar(temp)) 
+			if (isVariable(temp)) 
 			{
 				if(checkVar(temp))
 					expr += " " + key.at(temp);
@@ -244,7 +244,7 @@ class Tokenizer
 			{												 
 				if (isOperator(input[i])) // checks if the character is an operator	
 				{ 											
-					if (isVar(var) && !checkVar(var)) // checks if the string is a variable in syntax & if it exists		 
+					if (isVariable(var) && !checkVar(var)) // checks if the string is a variable in syntax & if it exists		 
 					{ 					
 						cout << "SNOL> Error! [" << var << "] is not defined!" << endl; 	
 						return false;
@@ -279,7 +279,7 @@ class Tokenizer
 			}
 
 			// check the final string
-			if (isVar(var) && !checkVar(var)) 
+			if (isVariable(var) && !checkVar(var)) 
 			{ 												
 				cout << "SNOL> Error! [" << var << "] is not defined!" << endl;
 				return false;
@@ -306,7 +306,7 @@ class Tokenizer
 
 				if (isOperator(input[i])) // checks if the current command is an operator  
 				{	 	
-					if (isVar(temp)) // checks if the stored string is a variable then stores it with the existing varibable
+					if (isVariable(temp)) // checks if the stored string is a variable then stores it with the existing varibable
 						result += " " + key.at(temp) + " " + input[i]; 
 					
 					else // else, store it with the new command only
@@ -323,7 +323,7 @@ class Tokenizer
 				temp += input[i]; // stores the command inputted by the user
 			}
 
-			if (isVar(temp))
+			if (isVariable(temp))
 				result += " " + key.at(temp); 
 
 			else
@@ -1028,11 +1028,11 @@ bool isOperator (char ch)
 } 
 
 /*
-*	isVar() - a function that checks if the string is a valid variable
+*	isVariable() - a function that checks if the string is a valid variable
 *	parameter: string ch - the string to be checked
 *	return: true if the string is a variable, false if not
 */
-bool isVar(string ch) 
+bool isVariable(string ch) 
 {	
 	// regex format that follows EBNF rule for 
 	// variable: 	letter{(letter|digit)}
