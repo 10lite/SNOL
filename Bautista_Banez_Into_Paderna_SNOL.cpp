@@ -364,9 +364,9 @@ void manual()
 
  		 << "\t6. SPECIAL KEYWORDS >> " << endl
 		 << "\t       > PRINT: Displays the targeted variable or literal." << endl
-		 << "\t   		\tExample: num = 8\n\tPRINT num" << endl
+		 << "\t   		Example: num = 8\n\t\t\tPRINT num" << endl
 		 << "\t       > BEG: Prompts for a user input for a variable" << endl
-		 << "\t   		\tExample: BEG var\n\tInput: (user value)" << endl
+		 << "\t   		Example: BEG var\n\tInput: (user value)" << endl
 		 << "\t       > HELP: Displays the user manual for this program." << endl
 		 << "\t       > EXIT!: Terminates the program." << endl;
 	system("pause"); 
