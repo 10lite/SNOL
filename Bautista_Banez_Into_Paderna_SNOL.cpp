@@ -32,7 +32,7 @@ string evaluateFloatExp (stack <float> mystack, string postfix);
 */
 class Tokenizer 
 { 
-	unordered_map<string, string> key; // a hash type of mapping to identify input and mapped value
+	unordered_map<string, string> key; // map that stores the variables and their values
 
 	public:
 		/*
@@ -50,13 +50,13 @@ class Tokenizer
 		}
 
 		/*
-		*	BEG() - function that handles the BEG command
+		*	BEG() - function that handles the BEG command, the input function
 		*	>> parameter - the input string "BEG <variable>"
 		*	>> return - none
 		*/
 		void BEG(string input)
 		{
-			// remove "BEG" from string
+			// remove "BEG " from string
 			string temp = input.erase(0, 4); 										
 			string tokens;
 			
@@ -81,7 +81,7 @@ class Tokenizer
 		*/
 		void PRINT(string input) 
 		{ 
-			// remove "PRINT" from string
+			// remove "PRINT " from string
 			string temp = input.erase(0, 6);														
 			
 			if (varFinder(temp)) // print the variable if it exists
@@ -92,7 +92,6 @@ class Tokenizer
 			
 			else // error if variable does not exist	
 				cout << "SNOL> Error! [" << temp << "] is not defined!" << endl;	
-						
 		} 
 
 		/*
@@ -105,9 +104,8 @@ class Tokenizer
 			string temp, expr, var;
 			bool flag = false;
 
-			for (int i = 0; i < input.length(); i++) // Traverse input command		
+			for (int i = 0; i < input.length(); i++) // Traverse input string	
 			{ 				
-
 				if (isOperator(input[i])) // if current character is an operator 		
 				{																		
 					if (input[i] == '-' && isdigit(input[i + 1])) // if the character is a negative integer
@@ -116,7 +114,7 @@ class Tokenizer
 						continue;
 					}
 
-					if (isVariable(temp)) // if the command is valid in terms of syntax
+					if (isVariable(temp)) // if the variable is valid in terms of syntax
 					{																				
 						if (varFinder(temp)) 
 						{																			
@@ -144,28 +142,28 @@ class Tokenizer
 				{ 		
 					if ((isdigit(input[i - 1])) && (isdigit(input[i + 1]))) 
 					{
-						cout << "SNOL> Unknown command! Does not match any valid command!" << endl;
+						cout << "SNOL> Unknown command! Does not match any valid command!" << endl; // error if there are two digits with no operator in between
 						return;
 					}
 
 					else continue;
 				}	
 
-				else if (input[i] == '=') // get variable name
+				else if (input[i] == '=') // add variable name before assignment operation to var string 
 				{
 					var += temp;	
 					temp.erase();
 				}
 
 				else
-					temp += input[i]; // Add char to part to be assessed 
+					temp += input[i]; // add char to temp string
 			}
 
 			// get the last part of the expression
 			if (isVariable(temp)) 
 			{
-				if (varFinder(temp))
-					expr += " " + key.at(temp);
+				if (varFinder(temp)) // if there is a variable in the expression
+					expr += " " + key.at(temp); 
 
 				else
 				{
@@ -174,7 +172,7 @@ class Tokenizer
 				}
 			}
 
-			else
+			else 
 				expr += " " + temp;
 			
 			temp.erase();
@@ -182,14 +180,14 @@ class Tokenizer
 			
 			// conditions if the expression is only a digit with no operations
 			if (isDigit(expr)) 
-				key[var] = expr;
+				key[var] = expr; // add variable to map with value of the digit
 			
-			else
+			else 
 			{
-				// infix to postfix conversion
+				// convert expression from infix to postfix 
 				stack <char> s;
 				string postfix = conversionHelper(s, expr);
-				string ans = "";
+				string ans = ""; // string to hold the answer
 				
 				// checks to see if all numbers have the same data types
 				if (!errorFinder(postfix)) 
@@ -198,10 +196,9 @@ class Tokenizer
 					return;
 				}
 
-				else
+				else // determine data type in the expression
 				{
-					// checks to see the data type in the postfix expression
-					if(expressionDataType(postfix)) 
+					if (expressionDataType(postfix)) // integer postfix expression
 					{
 						stack <float> i;
 						ans = evaluateIntExp(i, postfix);
@@ -213,9 +210,8 @@ class Tokenizer
 						}
 					}
 
-					else
+					else // float postfix expression
 					{
-						// evalutating the postfix that involves a float
 						stack <float> f;
 						ans = evaluateFloatExp(f, postfix);
 
@@ -225,8 +221,7 @@ class Tokenizer
 							return;
 						}	
 					}
-
-					// store the evaluated input into the variable in the map.
+					// store evaluated input into the variable in the map
 					key[var] = ans;
 				}
 			}
@@ -239,14 +234,14 @@ class Tokenizer
 		*/
 		bool varValidation(string input) 
 		{ 
-			string var; 					
+			string var; // string to hold the variable name					
 			bool flag = false;
 			
-			for (int i = 0; i < input.length(); i++) // Traverse input command
+			for (int i = 0; i < input.length(); i++) // Traverse input string
 			{												 
-				if (isOperator(input[i])) // checks if the character is an operator	
+				if (isOperator(input[i])) // if current character is an operator	
 				{ 											
-					if (isVariable(var) && !varFinder(var)) // checks if the string is a variable in syntax & if it exists		 
+					if (isVariable(var) && !varFinder(var)) // guard clause for valid variable 	 
 					{ 					
 						cout << "SNOL> Error! [" << var << "] is not defined!" << endl; 	
 						return false;
@@ -259,15 +254,15 @@ class Tokenizer
 					continue;
 				}
 
-				else if (input[i] == ' ') // checks to see if there are any whitespaces in the strings
+				else if (input[i] == ' ') // check whitespaces in string
 				{															
-					if ((input[i + 1] == '-') && (isdigit(input[i + 2])) && (flag == false)) // checks if the syntax of the input is an operation that involves the variable	
+					if ((input[i + 1] == '-') && (isdigit(input[i + 2])) && (flag == false)) // check if input is an operation that involves the variable	
 					{   
 						cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
 						return false;
 					}
 
-					else if ((isdigit(input[i - 1])) && (isdigit(input[i + 1]))) // checks if the entered command involves a digit
+					else if ((isdigit(input[i - 1])) && (isdigit(input[i + 1]))) // check if the entered command involves two digits with space in between
 					{   
 						cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl; 
 						return false;
@@ -290,8 +285,7 @@ class Tokenizer
 				var += input[i]; // stores the command inputted by the user
 				flag = true;
 			}
-
-			// check the final string
+			// checks if the variable is valid
 			if (isVariable(var) && !varFinder(var)) 
 			{ 												
 				cout << "SNOL> Error! [" << var << "] is not defined!" << endl;
@@ -309,7 +303,7 @@ class Tokenizer
 		{
 			string temp, result;
 			
-			for (int i = 0; i < input.length(); i++) // loop that will traverse the command
+			for (int i = 0; i < input.length(); i++) // Traverse input string
 			{											
 				if (input[i] == '-' && isdigit(input[i + 1])) // negative number
 				{									
@@ -317,9 +311,9 @@ class Tokenizer
 					continue;
 				}
 
-				if (isOperator(input[i])) // checks if the current command is an operator  
+				if (isOperator(input[i])) // operator  
 				{	 	
-					if (isVariable(temp)) // checks if the stored string is a variable then stores it with the existing varibable
+					if (isVariable(temp)) // if temp string is a variable, store it with the new command and its value
 						result += " " + key.at(temp) + " " + input[i]; 
 					
 					else // else, store it with the new command only
@@ -330,22 +324,21 @@ class Tokenizer
 					continue;
 				}
 
-				else if (input[i] == ' ')  // continues for loop if it encounters a whitespace	
+				else if (input[i] == ' ')  // continue loop if whitespace
 					continue;			
 											
-				temp += input[i]; // stores the command inputted by the user
+				temp += input[i]; // store current character in temp string
 			}
 
-			if (isVariable(temp))
+			if (isVariable(temp)) // if temp string is a variable, store it with the new command and its value
 				result += " " + key.at(temp); 
 
-			else
+			else // else, store it with the new command only
 				result += " " + temp;
 			
-			temp.erase();
+			temp.erase(); // erase temp string
 			return result;
 		} 
-															
 };
 
 /*
@@ -356,28 +349,26 @@ class Tokenizer
 void manual() 
 { 
 	cout << endl << ">> SNOL Overview" << endl
-		 << "\t1. Format >> Separate items with spaces. However, extra spaces will be disregarded." << endl
+		 << "\t1. Formatting >> Spaces are used to separate tokens but are not necessary. A command can have no space in it. All words are also case sensitive." << endl
 		 << "\t\tExample: var = 17 -> contains one space between every word" << endl
+		 << "\t\tExample: var, VaR, VAR will be addressed differently." << endl
 
-		 << "\t2. Case Sensitive >> All words are case sensitive." << endl
-		 << "\t\tExample: num, NUM, and nUm are distinct from one another. They will be addressed differently." << endl
+		 << "\t2. Data Type >> There are only two types of values: integer and floating-point. No type declaration; the type of variable is determined by the nature of the value it holds." << endl
+		 << "\t\tExample: \n\t\tnum = 5 + 5 -> CORRECT (both int)\n\t\tNUM = 5.5 + 5.5 -> CORRECT (both float)\n\t\tnum = 5 + 5.5 -> INVALID (different data types))" << endl 
 
-		 << "\t3. Data Type >> There are two data types only for SNOL integer and floating point" << endl
-		 << "\t\tExample: \n\t\tnum = 10 + 7 -> Correct since both are integers\n\t\tNUM = 10.3 + 7.5 -> Correct since both are floating-point\n\t\tnUm = 10 + 7.3 -> Invalid. Their data types are both different" << endl 
+		 << "\t3. Arithmetic Operations >> All operands in an operation should be of THE SAME TYPE. Each operation is in infix notation and follows C's precedence and associativity rules." << endl
 
-		 << "\t4. Operands >> Operands must be of the same type for arithemetic operations:" << endl
+		 << "\t4. Variables >> Cannot be keywords; simple expressions that evaluate to its corresponding value. It can be a combination of letters and numbers. Variables must be DEFINED FIRST before they can be used." << endl
 
-		 << "\t5. Variables >> Variables can be number or letters. However, it should start with letters, not numbers." << endl
-		 << "\t\tExample: \n\t\tnum -> Correct\n\t\t!num -> Incorrect \n\t\tNote: Variables should be DECLARED first before using." << endl
+		 << "\t5. Commands >> A command can be any valid literal, variable, and operation, but there are reserved keywords for certain commands." << endl
 
-		 << "\t6. Invalid Syntax >> Your command should be logical and acceptable" << endl
-
- 		 << "\t7. SPECIAL KEYWORDS >> This program has only 4 special keywords, namely: PRINT, BEG, HELP, and EXIT!" << endl
-		 << "\t       > PRINT: Display the targeted variable or literal." << endl
-		 << "\t\t\t   	Example: num = 8\n\t\t\tPRINT num" << endl
-		 << "\t       > BEG: Asks for a value" << endl
-		 << "\t       > HELP: Give the user an idea on how to use the program." << endl
-		 << "\t       > EXIT!: Terminate the Program" << endl;
+ 		 << "\t6. SPECIAL KEYWORDS >> " << endl
+		 << "\t       > PRINT: Displays the targeted variable or literal." << endl
+		 << "\t   		\tExample: num = 8\n\tPRINT num" << endl
+		 << "\t       > BEG: Prompts for a user input for a variable" << endl
+		 << "\t   		\tExample: BEG var\n\tInput: (user value)" << endl
+		 << "\t       > HELP: Displays the user manual for this program." << endl
+		 << "\t       > EXIT!: Terminates the program." << endl;
 	system("pause"); 
 }
 
@@ -407,67 +398,63 @@ int precedence (char value) // function that checks the precedence from infix to
 bool errorFinder (string postfix) 
 { 
     int prev, curr, j;
-    string tmp, tmp1;
+    string temp, temp1;
     
-    for (int i = 0; i < postfix.length(); i++) // a loop that checks each character to see if all the numbers have the same data type	
+    for (int i = 0; i < postfix.length(); i++) // traverse postfix string
 	{         	 						
-        if (isdigit(postfix[i]) || postfix[i]=='.') // stores character into a temporary string if number or period	
+        if (isdigit(postfix[i]) || postfix[i]=='.') // store if num or period
 		{   	 						 
-            tmp += postfix[i];
+            temp += postfix[i];
             continue;
         } 
 
 		else 
 		{
-            if (postfix[i] == ' ' && !tmp.empty()) // if char is space and temporary string is not empty, proceed to the if statement
+            if (postfix[i] == ' ' && !temp.empty()) // char is space and temp is not empty
 			{    							  
-                if (tmp.find(".") >= tmp.length()) // checks to see if the characters are integers	 								
-                    prev = 1; // chars are integer
+                if (temp.find(".") >= temp.length()) // check for a period in temp string	 								
+                    prev = 1; // integer
 
                 else 
-                    prev = 0; // chars are float															
+                    prev = 0; // float														
                 
-                if ((i + 1) < postfix.length()) 
+                if ((i + 1) < postfix.length()) // if the next character is not the last character in the string
 				{
-                    for (j = i + 1; j < postfix.length(); j++) // finds the next number to compare with tmp
+                    for (j = i + 1; j < postfix.length(); j++) // find the next character
 					{  							 
-                        if (isdigit(postfix[j]) || postfix[j] == '.') // stores character into a temporary string if num or period
+                        if (isdigit(postfix[j]) || postfix[j] == '.') // if the next character is a number or a period
 						{  				 
-                            tmp1 += postfix[j];
+                            temp1 += postfix[j];
                             continue;
                         } 
 
 						else 
 						{
-                            if (postfix[j] == ' ') // the character will compare the previous number and the next number if it the char is space	
+                            if (postfix[j] == ' ') // compare the two data types if the next character is a space
 							{  												  
-                                if (tmp1.find(".") >= tmp1.length()) // num is integer  				
+                                if (temp1.find(".") >= temp1.length()) // integer  				
                                     curr = 1;			
 
-                                else // num is a float                               					 
+                                else // float                            					 
                                     curr = 0;								
                                 
-                                if (prev != curr) // the two data type did not match if prev != curr	    				 				
+                                if (prev != curr) // return false if the data types are not the same    				 				
                                     return false;      				 					
                                    
-                                tmp = tmp1; // gets the current number and stores it into the temporary storage for the previous number
-                                tmp1.clear();       
+                                temp = temp1; // store temp1 in temp
+                                temp1.clear();       
 
                                 break;
                             }
-
 							else continue;
                         }
                     }
-
-                    i = j;
+                    i = j; // set i to j
                 }
             }
-			
 			else continue;
         }
     }
-    
     return true;
 }
 
@@ -479,7 +466,6 @@ bool errorFinder (string postfix)
 bool expressionDataType(string postfix) 
 { 
     return (postfix.find('.') >= postfix.length()); // returns true = int, false = floating-point				
-    
 }
 
 /*
@@ -489,10 +475,9 @@ bool expressionDataType(string postfix)
 */
 string conversionHelper(stack <char> stack, string infix) 
 { 
-	string postfix;	// a string that will hold the postfix expression
+	string postfix;	// string to hold the postfix expression
 	
-	// Traverse the infix expression
-    for (int i = 0; i < infix.length(); i++) 
+    for (int i = 0; i < infix.length(); i++) // traverse infix string
 	{ 								
         if ((isdigit(infix[i])) || (infix[i] == '.')) 			// if current char is a digit or a period
 		{					
@@ -563,14 +548,12 @@ string conversionHelper(stack <char> stack, string infix)
             }
         }
     }
-    
     while (!stack.empty()) // pop remaining operators		
 	{												
         postfix += stack.top();
         postfix += " ";
         stack.pop();
     }
-    
     return postfix; // return postfix expression
 }
 
@@ -593,24 +576,23 @@ string evaluateIntExp(stack <float> mystack, string postfix)
 { 
 	string num;
 	
-	// traverses through the expression
-	for (int i = 0; i < postfix.length(); i++)
+	for (int i = 0; i < postfix.length(); i++) // traverse postfix expression
 	{																		
 	 	if(isdigit(postfix[i])) // if the char is a digit	
 		{																					
             num += postfix[i]; // stores into the string																			
-        	if (!isdigit(postfix[i + 1])) num += " "; // stores the whitespace if the next char is not a digit														
+        	if (!isdigit(postfix[i + 1])) num += " "; // store a whitespace after the number													
         }
 
-        else if (postfix[i]==' ' && postfix[i+1] != 0) 
+        else if (postfix[i] == ' ' && postfix[i + 1] != 0)  // if the char is a whitespace and the next char is not a null terminator
 		{	    																					
-			int b=atoi(num.c_str()); // if the character is a whitespace then store the integer from a string																				
-        	mystack.push(b);
-            num.erase();
-            continue;
+			int b = atoi(num.c_str()); // convert the string to an integer
+			mystack.push(b); // push the integer to the stack
+			num.erase(); // clear the string
+			continue;			
         }
 
-        else if (postfix[i] == '-' && isdigit(postfix[i + 1])) // if it has a negative operand
+        else if (postfix[i] == '-' && isdigit(postfix[i + 1])) // negative number
 		{												
             num += postfix[i];
             continue;
@@ -623,60 +605,57 @@ string evaluateIntExp(stack <float> mystack, string postfix)
         	int val2 = mystack.top();	
         	mystack.pop();
         	
-        	if (postfix[i]=='%')									// proceeds to the function if a modulo is encountered	
+        	if (postfix[i]=='%') // modulo
 			{																					
-        		if (numDataType(val1)==true && numDataType(val2)==true)		// checks if both values are int
+        		if (numDataType(val1)==true && numDataType(val2)==true) // if both values are integers
 				{													
 	        		int v1 = val1; 
 	        		int v2 = val2;
-					mystack.push(v2%v1);							// pushes the modulo result
+					mystack.push(v2 % v1);
 				}
 
-				else
-					return "Error!";
+				else // modulo can not be performed if one of the values is a floating-point
+					return "Error!";	
 			}
 			
-			// where operators are evalutated
-			// operators in the stack with equivalent arithmetic operations will be pushed        	
-        	switch(postfix[i]) 
+        	switch(postfix[i]) // evaluate appropriate operator
 			{ 
-	            case '+': 
-					mystack.push(val2+val1); 
+	            case '+': // addition
+					mystack.push(val2 + val1); 
 					break;
 
-	            case '-': 
-					mystack.push(val2-val1); 
+	            case '-': // subtraction
+					mystack.push(val2 - val1); 
 					break;  
 
-	            case '*': 
-					mystack.push(val2*val1); 
+	            case '*': // multiplication
+					mystack.push(val2 * val1); 
 					break; 
 
-	            case '/': 
-					mystack.push(val2/val1); 
+	            case '/': // division
+					mystack.push(val2 / val1); 
 					break; 
             }
-
             i++;
 		}
  	}
 	 
-	// stores the top of the stack
-	float ans=mystack.top();
+	// store top of stack to ans
+	float ans = mystack.top();
 	 
-	// returning the evaluated expressions
-	if (numDataType(ans)==true)
+	// return evaluated expressions
+	if (numDataType(ans) == true)
 	{
-		int ans2=mystack.top();
+		int ans2 = mystack.top(); // integer
 		mystack.pop();
-		string ret= to_string(ans2);
+		string ret = to_string(ans2);
 		return ret;
 	}
 
-	else
+	else // if the value is a floating-point
 	{
-		mystack.pop();
-		string ret= to_string(ans);
+		mystack.pop(); 
+		string ret = to_string(ans);
 		return ret;
 	}
 } 
@@ -690,34 +669,35 @@ string evaluateFloatExp(stack <float> mystack, string postfix)
 { 
 	string num;
 	
-	// traverses the expression
-	for (int i = 0; i < postfix.length(); i++)
+	for (int i = 0; i < postfix.length(); i++) // traverse postfix expression
 	{							
-	 	if ((isdigit(postfix[i])) || (postfix[i] == '.')) 		// checks if the char has a period or a digit
+	 	if ((isdigit(postfix[i])) || (postfix[i] == '.')) // if the char is a digit or a period
 		{					
-            num += postfix[i];									// stores it			
-            if (postfix[i + 1] == '.') continue;				// continues if next char has a period						
-            else if (!isdigit(postfix[i + 1])) num += " ";		// stores a whitespace if char is not a digit				
+            num += postfix[i];										
+            if (postfix[i + 1] == '.') // continue if the next char is a period
+				continue;									
+            else if (!isdigit(postfix[i + 1])) // store whitespace after the number
+				num += " ";					
         }
 
-        else if (postfix[i]==' ' && postfix[i+1]!=0) 
+        else if ((postfix[i] == ' ') && (postfix[i + 1] != 0)) // if the char is a whitespace and the next char is not a null terminator
 		{												
-			float a=atof(num.c_str()); 							//if the character is a whitespace then store the integer from a string				
+			float a = atof(num.c_str()); // convert the string to a float										
     		mystack.push(a);
             num.erase();
             continue;
         }
 		
-        else if (postfix[i] == '-' && isdigit(postfix[i + 1])) 	// if it has a negative operand	
+        else if (postfix[i] == '-' && isdigit(postfix[i + 1])) // negative number
 		{			
             num += postfix[i];													
             continue;
         }
 		
-        else if (postfix[i] == '%') 							// invalid imput if a modulo exists in a floating-point
-            return "Error!";
+        else if (postfix[i] == '%') // error if modulo is used							
+            return "Error! Modulo cannot be used on floating-point numbers!";
         
-        else 
+        else  // if the char is an operator
 		{
         	float val1 = mystack.top();
         	mystack.pop();
@@ -725,30 +705,27 @@ string evaluateFloatExp(stack <float> mystack, string postfix)
         	float val2 = mystack.top();	
         	mystack.pop();
 			
-			// where operators are evalutated
-			// operators in the stack with equivalent arithmetic operations will be pushed       	
-        	switch (postfix[i]) 
+        	switch (postfix[i]) // evaluate appropriate operator
 			{ 											
-	            case '+': 
-					mystack.push(val2+val1); 
+	            case '+': // addition
+					mystack.push(val2 + val1); 
 					break;
-	            case '-': 
-					mystack.push(val2-val1); 
+	            case '-': // subtraction
+					mystack.push(val2 - val1); 
 					break;   					
-	            case '*': 
-					mystack.push(val2*val1); 
+	            case '*': // multiplication
+					mystack.push(val2 * val1); 
 					break; 
-	            case '/': 
-					mystack.push(val2/val1); 
+	            case '/': // division
+					mystack.push(val2 / val1); 
 					break; 
             }
             i++;
 		}
 	}
-	// stores the top of the stack
-	float ans = mystack.top();
+	float ans = mystack.top(); // store top of stack to ans
 	
-	// returning the evaluated expressions
+	// return evaluated expressions
 	if (numDataType(ans) == true)
 	{
 		int ans2 = mystack.top();
@@ -758,7 +735,7 @@ string evaluateFloatExp(stack <float> mystack, string postfix)
 		return ret;
 	}
 
-	else
+	else // if the value is a floating-point
 	{
 		mystack.pop();
 		string ret = to_string(ans);
@@ -773,35 +750,34 @@ string evaluateFloatExp(stack <float> mystack, string postfix)
 */
 int commands(string input) 
 {
-	regex beg("BEG [^\\|]+");		// BEG characters[any] to be a BEG command
-	regex disp("PRINT [^\\|]+");	// PRINT characters[any] to be a PRINT command
+	regex beg("BEG [^\\|]+");		// regex for a BEG command
+	regex disp("PRINT [^\\|]+");	// regex for a PRINT command
 	
-	int j = input.length();
+	int j = input.length(); 
 	
-	if (regex_match(input, beg))
+	if (regex_match(input, beg)) // check if input is a BEG command
 		return 1;
 
-	else if (regex_match(input, disp)) 
+	else if (regex_match(input, disp)) // check if input is a PRINT command
 		return 2;
 
-	else if (input == "EXIT!") 
+	else if (input == "EXIT!") // check if input is an EXIT command
 		return 3;
 	 
-	else if (input == "HELP")
+	else if (input == "HELP") // check if input is a HELP command
 		return 6;
 	
-	else if (isVariable(input) || isDigit(input))
+	else if (isVariable(input) || isDigit(input)) // simple expression
 		return 7;
 	
-	for (int i = 0; i < j; i++) // checks if the input is an assignment
+	for (int i = 0; i < j; i++) // traverse through the input
 	{  
-		if (isOperator(input[i]))		// calculate if it starts with an operator
+		if (isOperator(input[i]))		// check if input is an operator
 			return 4; 					
 		 
-		if (input[i] == '=')			// it is an assignment if it starts with an equal "=" sign
+		if (input[i] == '=')			// assignment operation with the presence of an '='
 			return 5;	
 	}
-	
 	return 0;	
 } 
 
@@ -814,6 +790,7 @@ bool syntaxValidation(string input, int type)
 { 
 	// regex format that follows EBNF rule for variable - letter{(letter|digit)}
 	regex var("\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 	
+
 	// regex format that follows EBNF rule of 
 	// int - [-]digit{digit} 
 	// float - [-]digit{digit}.{digit} 	
@@ -852,7 +829,7 @@ bool syntaxValidation(string input, int type)
 		}
 	}
 
-	else if (type == 4) 
+	else if (type == 4) // if input is an expression
 	{ 
 		for (int i = 0; i < input.length(); i++) 
 		{
@@ -928,9 +905,9 @@ bool syntaxValidation(string input, int type)
 
 	else if (type == 5) // Assignment Operation
 	{ 
-		for (int i = 0, equals = 0, period = 0; i < input.size(); i++) 
+		for (int i = 0, equals = 0; i < input.size(); i++) 
 		{
-			if (parenthesis < 0) // Error check for unpaired paranthesis
+			if (parenthesis < 0) // guard clause for unpaired paranthesis
 			{ 
 				cout << "SNOL> Missing parenthesis pair!" << endl;
 				return false;
@@ -948,17 +925,17 @@ bool syntaxValidation(string input, int type)
 				temp += input[i];
 			}
 
-			else if (input[i] == '=') 
+			else if (input[i] == '=') // guard clause for more than one '=' in the expression
 			{	
 				equals++;
 
-				if (equals > 1) // Error check for more than one equal sign
+				if (equals > 1) 
 				{
 					cout << "SNOL> Invalid! More than one '=' in the expression." << endl;
 					return false;
 				}
 
-				if (!regex_match(temp, var)) // if temp is not match in the formate
+				if (!regex_match(temp, var)) // if temp is not a valid variable
 				{	
 					cout << "SNOL> Error! Invalid variable name syntax." << endl;
 					return false;
@@ -967,9 +944,9 @@ bool syntaxValidation(string input, int type)
 				temp.erase();	
 			}
 
-			else if (isOperator(input[i])) // checks if input is an operator
+			else if (isOperator(input[i])) // operator
 			{	
-				if (input[i] == '-' && temp.length() == 0) // checks if input is a negative number
+				if (input[i] == '-' && temp.length() == 0) // negative number
 				{ 
 					temp += input[i];
 					continue;
@@ -981,7 +958,7 @@ bool syntaxValidation(string input, int type)
 					return false;
 				}
 
-				if (!(regex_match(temp, var) || regex_match(temp, digit))) // checks if temp is not a variable or temp is a number	
+				if (!(regex_match(temp, var) || regex_match(temp, digit))) // check if temp is neither a valid variable nor number
 				{ 
 					cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
 					return false;
@@ -990,34 +967,32 @@ bool syntaxValidation(string input, int type)
 				temp.erase(); // delete temp
 			}
 
-			else if (input[i] == ' ') // ignore white spaces
+			else if (input[i] == ' ') // ignore whitespaces
 				continue;
 			
 			else temp += input[i]; // add input to temp
 		}
 
-		if (parenthesis != 0) // Error check for unpaired paranthesis
+		if (parenthesis != 0) // guard clause for unpaired parenthesis
 		{ 
 			cout << "SNOL> Missing parenthesis pair!" << endl;
 			return false;
 		}
 
-		if (temp.size() == 0) // Error check for empty temp
+		if (temp.size() == 0) // empty temp
 		{	
 			cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
 			return false;
 		}
 
-		if (!(regex_match(temp, var) || regex_match(temp, digit))) // checks if temp is not a variable or temp is a number
+		if (!(regex_match(temp, var) || regex_match(temp, digit))) // temp is not a valid variable nor digit
 		{ 
 			cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
 			return false;
 		}
-
 		temp.erase();
 		return true;
 	}
-
 	else return false;
 } 
 
@@ -1057,10 +1032,10 @@ bool isVariable(string ch)
 	regex var(" *\\(*-?[A-Za-z][A-Za-z0-9]*\\)*"); 
 
 	if (regex_match(ch, var))
-		return true; // returns true if the string match
+		return true; // return true if the string matches the regex format
 	
 	else
-		return false; // returns false if not	
+		return false; // return false otherwise
 } 
 
 /*
@@ -1133,24 +1108,23 @@ void postfixConversion(string expr)
 */
 int main() 
 { 
-	string input;  		//user string input
-	int type = 0; 		//variable to use to store what type of command
-	Tokenizer tokens; 	//object from Tokenizer class	
+	string input;  		// user string input
+	int type = 0; 		// variable to use to store type of command
+	Tokenizer tokens; 	// object from Tokenizer class	
 	
 	// Message for program start
 	cout << "\n\nThe SNOL environment is now active, you may proceed with giving your commands." << endl;
 	
-	while (input != "EXIT!") // loops until user input is "EXIT!""
+	while (input != "EXIT!") // loop until user input is "EXIT!"
 	{ 
 		// Get user input
 		cout << "\nCommand: ";   
 		getline(cin, input); 
 		
 		// Command validation
-		type = commands(input); // checks whether user input is an appropriate command
+		type = commands(input);
 		
-		// Switch case for the command specified by the user
-		switch (type) 
+		switch (type) // switch case for command type
 		{ 		
 			case 0: // Invalid command input
 				cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl; 
@@ -1174,7 +1148,7 @@ int main()
 
 				break;
 
-			case 4: // Check expression
+			case 4: // Expression
 				if (!syntaxValidation(input, type))  	// Input syntax guard clause
 					break;
 				
@@ -1185,7 +1159,7 @@ int main()
 				}
 				break;
 
-			case 5: // Check assignment operation
+			case 5: // Assignment operation
 				if (syntaxValidation(input, type)) // Input syntax validation
 					tokens.assignmentOp(input);	
 				
