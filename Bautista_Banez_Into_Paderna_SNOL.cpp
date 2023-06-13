@@ -767,7 +767,7 @@ int commands(string input)
 	else if (input == "HELP") // check if input is a HELP command
 		return 6;
 	
-	else if (isVariable(input) || isDigit(input)) // simple expression
+	else if (isVariable(input) || isDigit(input) || syntaxValidation(input, 4)) // simple expression
 		return 7;
 	
 	for (int i = 0; i < j; i++) // traverse through the input
@@ -868,6 +868,12 @@ bool syntaxValidation(string input, int type)
 				if (!(regex_match(temp, var) || regex_match(temp, digit))) // checks if temp is not a variable or temp is a number
 				{  
 					cout << "SNOL> Unknown command! Does not match any valid command of the language." << endl;
+					return false;
+				}
+
+				if (input[i] == '/' && input[i + 1] == '0') // checks if input is a division by zero
+				{ 
+					cout << "SNOL> Division by zero is not allowed!" << endl;
 					return false;
 				}
 
@@ -1157,6 +1163,7 @@ int main()
 					input = tokens.getValue(input); 	// get the value of the variable
 					postfixConversion(input); 			// convert to postfix and evaluate
 				}
+
 				break;
 
 			case 5: // Assignment operation
