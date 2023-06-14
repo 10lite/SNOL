@@ -767,7 +767,7 @@ int commands(string input)
 	else if (input == "HELP") // check if input is a HELP command
 		return 6;
 	
-	else if (isVariable(input) || isDigit(input) || syntaxValidation(input, 4)) // simple expression
+	else if (isVariable(input) || isDigit(input)) // simple expression
 		return 7;
 	
 	for (int i = 0; i < j; i++) // traverse through the input
